@@ -18,9 +18,8 @@
       max-width: 100%;
       cursor: pointer;
     }
-    /* grayscale / glitch mode */
     .glitchy {
-      filter: grayscale(100%) contrast(130%);
+      filter: contrast(130%);
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
@@ -36,8 +35,6 @@
     let pg;
     let fontSize;
     let glitchMode = false;
-
-    // reference to the sound sketch instance
     let soundSketchInstance = null;
 
     function setup() {
@@ -46,7 +43,7 @@
       frameRate(30);
 
       palette = [
-        color(40, 40, 200),   // deep blue default
+        color(40, 40, 200),
         color(40, 40, 200),
         color(40, 40, 200),
         color(40, 40, 200)
@@ -65,20 +62,22 @@
       }
 
       drawMask();
-
-      // toggle on click
       document.getElementById("canvas-holder").addEventListener("click", toggleMode);
     }
 
     function drawMask() {
       pg = createGraphics(width, height);
       pg.clear();
-      pg.fill(255);
-      pg.noStroke();
       pg.textAlign(CENTER, CENTER);
-
       fontSize = windowWidth < 600 ? 80 : 140;
       pg.textSize(fontSize);
+
+      if (glitchMode) {
+        pg.background(0);
+        pg.fill(255);
+      } else {
+        pg.fill(255);
+      }
 
       if (windowWidth < 600) {
         pg.text("Pieter", width / 2, height / 2 - fontSize * 0.4);
@@ -91,22 +90,18 @@
     function draw() {
       background(255);
       let t = millis() * 0.0003;
-
       let linesLayer = createGraphics(width, height);
       linesLayer.strokeWeight(1.5);
 
       for (let o of offsets) {
         linesLayer.push();
         linesLayer.translate(o.x, o.y);
-
         let angle = noise(o.x * 0.05, o.y * 0.05, t + o.angleOffset) * TWO_PI * 2;
         linesLayer.rotate(angle);
-
         let baseLen = noise(o.x * 0.1, o.y * 0.1, t * 0.8 + o.lenOffset) * 8 + 3;
 
         if (glitchMode) {
-          // greyscale + jitter
-          linesLayer.stroke(random(100, 220));
+          linesLayer.stroke(random(0, 50));
           baseLen *= random(0.5, 1.8);
         } else {
           if (random() < 0.9) {
@@ -123,7 +118,6 @@
       let linesImg = linesLayer.get();
       let maskImg = pg.get();
       linesImg.mask(maskImg);
-
       image(linesImg, 0, 0);
     }
 
@@ -132,10 +126,10 @@
       setup();
     }
 
-    // --- Toggle sound + glitch mode ---
     function toggleMode() {
       glitchMode = !glitchMode;
       document.getElementById("canvas-holder").classList.toggle("glitchy", glitchMode);
+      drawMask();
 
       if (glitchMode) {
         if (!soundSketchInstance) {
@@ -150,7 +144,6 @@
     }
   </script>
 
-  <!-- your sound sketch -->
   <script src="sketch.js"></script>
 </body>
 </html>
